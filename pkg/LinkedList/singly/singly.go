@@ -1,6 +1,8 @@
 package singly
 
-import iter "github.com/utkarsh-pro/ugstl/pkg/Iter"
+import (
+	iter "github.com/utkarsh-pro/ugstl/pkg/Iter"
+)
 
 type List[T any] struct {
 	head *Node[T]
@@ -97,5 +99,36 @@ func (l *List[T]) Get(n uint) (*Node[T], bool) {
 }
 
 func (l *List[T]) RemoveFromHead() {
+	if l.head == nil {
+		return
+	}
+
+	l.len--
 	l.head = l.head.GetNext()
+}
+
+func (l *List[T]) RemoveAtN(n uint) error {
+	if n >= l.Len() {
+		return ErrIndexOutOfBound
+	}
+
+	if n == 0 {
+		l.RemoveFromHead()
+		return nil
+	}
+
+	prevNode, ok := l.Get(n - 1)
+	if !ok {
+		return ErrInvalidState
+	}
+
+	node := prevNode.GetNext()
+	if node == nil {
+		return ErrInvalidState
+	}
+
+	l.len--
+	prevNode.SetNext(node.GetNext())
+
+	return nil
 }
