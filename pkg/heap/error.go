@@ -8,6 +8,8 @@ import (
 var (
 	ErrIndexOutOfBound   = errors.New("index out of bound")
 	ErrInvalidHeapConfig = errors.New("heap can either be of type MIN or MAX")
+	ErrInvalidElement    = errors.New("invalid element")
+	ErrHeapUnderflow     = errors.New("heap underflow")
 )
 
 func GetErrIndexOutOfBound(idx, len int) error {

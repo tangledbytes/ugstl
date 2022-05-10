@@ -59,6 +59,72 @@ func (h *Heap[T]) Fix() {
 	}
 }
 
+func (h *Heap[T]) Set(idx int, el T) error {
+	if idx < 0 || idx > h.size {
+		return ErrIndexOutOfBound
+	}
+
+	orig := h.array[idx]
+
+	if !h.compFn(orig, el) {
+		return ErrInvalidElement
+	}
+
+	h.array[idx] = el
+
+	for idx > 0 && h.compFn(h.array[parentIdx(idx)], h.array[idx]) {
+		h.array[parentIdx(idx)], h.array[idx] = h.array[idx], h.array[parentIdx(idx)]
+		idx = parentIdx(idx)
+	}
+
+	return nil
+}
+
+// Push adds the element to the heap
+func (h *Heap[T]) Push(el T) {
+	h.array = append(h.array, el)
+	h.size++
+
+	for {
+		p := parentIdx(h.size - 1)
+
+		if h.compFn(h.array[p], h.array[h.size-1]) {
+			h.array[p], h.array[h.size-1] = h.array[h.size-1], h.array[p]
+		} else {
+			break
+		}
+	}
+}
+
+// Top returns the top element of the heap
+func (h *Heap[T]) Top() (T, error) {
+	var t T
+
+	if h.size < 1 {
+		return t, ErrHeapUnderflow
+	}
+
+	t = h.array[0]
+	return t, nil
+}
+
+func (h *Heap[T]) ExtractTop() (T, error) {
+	var t T
+
+	if h.size < 1 {
+		return t, ErrHeapUnderflow
+	}
+
+	h.array[0], h.array[h.size-1] = h.array[h.size-1], h.array[0]
+	t = h.array[h.size-1]
+
+	h.array = h.array[:h.size-1]
+	h.size--
+	h.heapify(0)
+
+	return t, nil
+}
+
 // heapify takes the index of the element and heapifies the
 // the heap on that index
 func (h *Heap[T]) heapify(idx int) {
@@ -80,15 +146,6 @@ func (h *Heap[T]) heapify(idx int) {
 
 	h.array[target], h.array[idx] = h.array[idx], h.array[target]
 	h.heapify(target)
-}
-
-// InternalArray returns the underlying array
-//
-// NOTE: Any manual manipulation to the array is
-// not reconciled, the `Fix` method must be called to
-// fix the potentially invalid Heap
-func (h *Heap[T]) InternalArray() Store[T] {
-	return h.array
 }
 
 // Size returns the size of the heap
